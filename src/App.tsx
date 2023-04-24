@@ -25,44 +25,42 @@ function App() {
     const [toDos, setToDos] = useRecoilState(toDoState);
 
     const onDragEnd = (info: DropResult) => {
-        console.log(info);
         const { destination, draggableId, source } = info;
 
+        if (!destination) return;
         if (destination?.droppableId === source.droppableId) {
             // same board movement.
-            setToDos((allToDos) => {
-                const boardCopy = [...allToDos[source.droppableId]];
+            setToDos((allBoards) => {
+                const boardCopy = [...allBoards[source.droppableId]];
+                const taskObj = boardCopy[source.index];
+
                 boardCopy.splice(source.index, 1);
-                boardCopy.splice(destination?.index, 0, draggableId);
+                boardCopy.splice(destination?.index, 0, taskObj);
 
                 return {
-                    ...allToDos,
+                    ...allBoards,
                     [source.droppableId]: boardCopy,
                 };
             });
         }
+        if (destination.droppableId !== source.droppableId) {
+            // cross board movement
+            setToDos((allBoards) => {
+                const sourceBoard = [...allBoards[source.droppableId]];
+                const taskObj = sourceBoard[source.index];
+                const destinationBoard = [
+                    ...allBoards[destination.droppableId],
+                ];
+                sourceBoard.splice(source.index, 1);
+                destinationBoard.splice(destination?.index, 0, taskObj);
 
-        // if (!destination) return;
-        // setToDos((oldToDos) => {
-        //     const copyToDos = [...oldToDos];
-        //     // 1) source.index 삭제
-        //     console.log("Delete item on", source.index);
-        //     console.log(copyToDos);
-
-        //     copyToDos.splice(source.index, 1);
-
-        //     console.log("Deleted item");
-        //     console.log(copyToDos);
-
-        //     // 2) destination.index 넣기
-        //     console.log("Put back", draggableId, "on", destination.index);
-
-        //     copyToDos.splice(destination?.index, 0, draggableId);
-
-        //     console.log(copyToDos);
-
-        //     return copyToDos;
-        // });
+                return {
+                    ...allBoards,
+                    [source.droppableId]: sourceBoard,
+                    [destination.droppableId]: destinationBoard,
+                };
+            });
+        }
     };
 
     return (
